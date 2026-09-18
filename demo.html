@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Demo interaktif SolusiKasirKu - simulasi sistem kasir untuk UMKM.">
+<title>Demo Sistem Kasir — SolusiKasirKu</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="demo.css">
+<style>
+/* Tombol kembali dibuat sedikit lebih menonjol tanpa mengubah demo.css utama */
+.back{background:#0757c9!important;border-color:#0757c9!important}
+@media print{
+  body *{visibility:hidden!important}
+  #receiptModal,#receiptModal *{visibility:visible!important}
+  #receiptModal{position:absolute!important;inset:0!important;background:#fff!important;padding:0!important}
+  #receiptModal .modal-box{box-shadow:none!important;width:80mm!important;max-width:80mm!important;padding:10mm!important}
+  #receiptModal .modal-actions{display:none!important}
+}
+</style>
+</head>
+
+<body>
+<div class="demo-banner">MODE DEMO • Data hanya tersimpan di browser Anda dan bukan data usaha nyata.</div>
+
+<aside class="sidebar">
+  <div class="brand">
+    <img src="assets/logo.png" alt="Logo SolusiKasirKu">
+    <div>
+      <h2>SolusiKasirKu</h2>
+      <p>Demo Sistem Kasir</p>
+    </div>
+  </div>
+
+  <button class="nav active" data-page="kasir">🧾 Kasir</button>
+  <button class="nav" data-page="dashboard">📊 Dashboard</button>
+  <button class="nav" data-page="penjualan">📋 Penjualan</button>
+  <button class="nav" data-page="pembelian">🛒 Pembelian</button>
+  <button class="nav" data-page="kas">💰 Kas</button>
+  <button class="nav" data-page="laporan">📈 Laporan</button>
+  <button class="nav" data-page="menu">🍜 Master Menu</button>
+
+  <div class="sidebar-bottom">
+    <button class="reset" id="resetDemo">↻ Reset Demo</button>
+    <a class="back" href="index.html">← Kembali ke Website</a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h1 id="pageTitle">Kasir</h1>
+      <p id="pageSubtitle">Simulasikan transaksi penjualan seperti aplikasi kasir sebenarnya.</p>
+    </div>
+    <div class="demo-user">
+      <strong>Demo User</strong><br>
+      Mode Simulasi
+    </div>
+  </div>
+
+  <!-- KASIR -->
+  <section class="page active" id="page-kasir">
+    <div class="pos-grid">
+      <div class="products-panel">
+        <div class="toolbar">
+          <input id="searchMenu" type="search" placeholder="Cari menu...">
+          <div class="chips" id="categories"></div>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+      </div>
+
+      <div class="card cart-panel">
+        <div class="cart-head">
+          <h2>Keranjang</h2>
+          <button class="text-btn" id="clearCart">Kosongkan</button>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+
+        <div class="cart-total">
+          <span>Total</span>
+          <strong id="cartTotal">Rp0</strong>
+        </div>
+
+        <div class="payment-box">
+          <label>Metode Pembayaran</label>
+          <div class="pay-methods">
+            <button class="pay active" data-pay="CASH">💵 CASH</button>
+            <button class="pay" data-pay="QRIS">📱 QRIS</button>
+            <button class="pay" data-pay="TRANSFER">🏦 TRANSFER</button>
+            <button class="pay" data-pay="DEBIT">💳 DEBIT</button>
+          </div>
+
+          <label id="cashLabel" for="cashPaid">Uang Dibayar</label>
+          <input id="cashPaid" type="number" min="0" placeholder="Contoh: 50000">
+
+          <div class="change">
+            <span>Kembalian</span>
+            <strong id="change">Rp0</strong>
+          </div>
+
+          <button class="primary big" id="checkout">✓ Proses Transaksi Demo</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="page" id="page-dashboard">
+    <div class="stats">
+      <div class="stat"><span>Total Penjualan</span><strong id="dashSales">Rp0</strong></div>
+      <div class="stat"><span>Transaksi</span><strong id="dashTransactions">0 transaksi</strong></div>
+      <div class="stat"><span>Item Terjual</span><strong id="dashItems">0 pcs</strong></div>
+      <div class="stat"><span>Kas Bersih</span><strong id="dashCash">Rp0</strong></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="section-head">
+          <h2>Grafik Penjualan</h2>
+          <span class="badge">DEMO</span>
+        </div>
+        <div class="bars" id="dashboardBars"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-head">
+          <h2>Menu Terlaris</h2>
+          <span class="muted">berdasarkan transaksi demo</span>
+        </div>
+        <div id="topMenus"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PENJUALAN -->
+  <section class="page" id="page-penjualan">
+    <div class="card">
+      <div class="section-head">
+        <h2>Riwayat Penjualan</h2>
+        <span class="badge">DEMO</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th><th>Waktu</th><th>Item</th><th>Pembayaran</th><th>Total</th><th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="salesTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- PEMBELIAN -->
+  <section class="page" id="page-pembelian">
+    <div class="card">
+      <div class="section-head">
+        <div>
+          <h2>Data Pembelian</h2>
+          <p class="muted">Contoh pencatatan pembelian bahan/barang.</p>
+        </div>
+        <button class="primary" id="addPurchase">+ Tambah Pembelian</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tanggal</th><th>Barang</th><th>Qty</th><th>Total</th></tr></thead>
+          <tbody id="purchaseTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- KAS -->
+  <section class="page" id="page-kas">
+    <div class="stats">
+      <div class="stat"><span>Kas Masuk</span><strong id="cashIn">Rp0</strong></div>
+      <div class="stat"><span>Kas Keluar</span><strong id="cashOut">Rp0</strong></div>
+      <div class="stat"><span>Saldo Kas</span><strong id="cashBalance">Rp0</strong></div>
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <div>
+          <h2>Arus Kas</h2>
+          <p class="muted">Simulasikan pemasukan dan pengeluaran.</p>
+        </div>
+        <button class="primary" id="addCash">+ Catat Kas</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Waktu</th><th>Keterangan</th><th>Jenis</th><th>Nominal</th></tr></thead>
+          <tbody id="cashTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAPORAN -->
+  <section class="page" id="page-laporan">
+    <div class="card">
+      <div class="section-head">
+        <div>
+          <h2>Laporan Keuangan</h2>
+          <p class="muted">Ringkasan berdasarkan data simulasi.</p>
+        </div>
+        <button class="secondary" id="printReport">🖨 Cetak Laporan</button>
+      </div>
+      <div id="reportContent"></div>
+    </div>
+  </section>
+
+  <!-- MASTER MENU -->
+  <section class="page" id="page-menu">
+    <div class="card">
+      <div class="section-head">
+        <div>
+          <h2>Master Menu</h2>
+          <p class="muted">Tambahkan menu sendiri untuk mencoba sistem custom.</p>
+        </div>
+        <button class="primary" id="addMenu">+ Tambah Menu</button>
+      </div>
+      <div class="menu-admin" id="menuTable"></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="receiptModal">
+  <div class="modal-box">
+    <div id="receipt"></div>
+    <div class="modal-actions">
+      <button class="secondary" id="closeReceipt">Tutup</button>
+      <button class="primary" id="printReceipt">🖨 Cetak Struk</button>
+    </div>
+  </div>
+</div>
+
+<script src="demo.js"></script>
+</body>
+</html>
